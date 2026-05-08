@@ -3,6 +3,7 @@ import { PriceScaleMode, PriceScaleOptions } from '../../model/price-scale';
 export const priceScaleOptionsDefaults: PriceScaleOptions = {
 	autoScale: true,
 	mode: PriceScaleMode.Normal,
+	percentageModeReferenceSourceIndex: 0,
 	invertScale: false,
 	alignLabels: true,
 	borderVisible: true,

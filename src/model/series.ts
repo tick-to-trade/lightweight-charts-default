@@ -361,8 +361,13 @@ export class Series<T extends SeriesType> extends PriceDataSource implements IDe
 			return null;
 		}
 
+		const firstValueIndex =
+			this._seriesType === 'Bar' || this._seriesType === 'Candlestick'
+				? PlotRowValueIndex.Open
+				: PlotRowValueIndex.Close;
+
 		return {
-			value: bar.value[PlotRowValueIndex.Close],
+			value: bar.value[firstValueIndex],
 			timePoint: bar.time,
 		};
 	}

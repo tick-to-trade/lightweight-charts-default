@@ -2840,6 +2840,14 @@ export interface PriceScaleOptions {
 	 */
 	mode: PriceScaleMode;
 	/**
+	 * Source index used as shared base for percentage and indexed-to-100 modes.
+	 * When a valid source at this index has data, all attached sources are normalized
+	 * against that source's first visible value.
+	 *
+	 * @defaultValue `0`
+	 */
+	percentageModeReferenceSourceIndex: number;
+	/**
 	 * Invert the price scale, so that a upwards trend is shown as a downwards trend and vice versa.
 	 * Affects both the price scale and the data on the chart.
 	 *

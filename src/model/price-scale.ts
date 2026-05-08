@@ -104,6 +104,15 @@ export interface PriceScaleOptions {
 	mode: PriceScaleMode;
 
 	/**
+	 * Source index used as shared base for percentage and indexed-to-100 modes.
+	 * When a valid source at this index has data, all attached sources are normalized
+	 * against that source's first visible value.
+	 *
+	 * @defaultValue `0`
+	 */
+	percentageModeReferenceSourceIndex: number;
+
+	/**
 	 * Invert the price scale, so that a upwards trend is shown as a downwards trend and vice versa.
 	 * Affects both the price scale and the data on the chart.
 	 *
@@ -427,6 +436,7 @@ export class PriceScale {
 	}
 
 	public priceToCoordinate(price: number, baseValue: number): Coordinate {
+		baseValue = this._resolveBaseValue(baseValue);
 		if (this.isPercentage()) {
 			price = toPercent(price, baseValue);
 		} else if (this.isIndexedTo100()) {
@@ -438,6 +448,7 @@ export class PriceScale {
 
 	public pointsArrayToCoordinates<T extends PricedValue>(points: T[], baseValue: number, visibleRange?: SeriesItemsIndexesRange): void {
 		this._makeSureItIsValid();
+		baseValue = this._resolveBaseValue(baseValue);
 		const bh = this._bottomMarginPx();
 		const range = ensureNotNull(this.priceRange());
 		const min = range.minValue();
@@ -472,6 +483,7 @@ export class PriceScale {
 
 	public barPricesToCoordinates<T extends BarPrices & BarCoordinates>(pricesList: T[], baseValue: number, visibleRange?: SeriesItemsIndexesRange): void {
 		this._makeSureItIsValid();
+		baseValue = this._resolveBaseValue(baseValue);
 		const bh = this._bottomMarginPx();
 		const range = ensureNotNull(this.priceRange());
 		const min = range.minValue();
@@ -524,6 +536,7 @@ export class PriceScale {
 	}
 
 	public logicalToPrice(logical: number, baseValue: number): BarPrice {
+		baseValue = this._resolveBaseValue(baseValue);
 		let value = logical;
 		if (this.isPercentage()) {
 			value = fromPercent(value, baseValue);
@@ -754,6 +767,7 @@ export class PriceScale {
 	}
 
 	public formatPrice(price: number, firstValue: number): string {
+		firstValue = this._resolveBaseValue(firstValue);
 		switch (this._options.mode) {
 			case PriceScaleMode.Percentage:
 				return this._formatPercentage(toPercent(price, firstValue));
@@ -780,6 +794,7 @@ export class PriceScale {
 	}
 
 	public formatPricePercentage(price: number, baseValue: number): string {
+		baseValue = this._resolveBaseValue(baseValue);
 		price = toPercent(price, baseValue);
 		return this._formatPercentage(price, percentageFormatter);
 	}
@@ -915,8 +930,8 @@ export class PriceScale {
 				continue;
 			}
 
-			const firstValue = source.firstValue();
-			if (firstValue === null) {
+			const sourceFirstValue = source.firstValue();
+			if (sourceFirstValue === null) {
 				continue;
 			}
 
@@ -929,10 +944,10 @@ export class PriceScale {
 						sourceRange = convertPriceRangeToLog(sourceRange, this._logFormula);
 						break;
 					case PriceScaleMode.Percentage:
-						sourceRange = toPercentRange(sourceRange, firstValue.value);
+						sourceRange = toPercentRange(sourceRange, this._resolveBaseValue(sourceFirstValue.value));
 						break;
 					case PriceScaleMode.IndexedTo100:
-						sourceRange = toIndexedTo100Range(sourceRange, firstValue.value);
+						sourceRange = toIndexedTo100Range(sourceRange, this._resolveBaseValue(sourceFirstValue.value));
 						break;
 				}
 
@@ -1015,6 +1030,21 @@ export class PriceScale {
 		}
 
 		return null;
+	}
+
+	private _resolveBaseValue(fallbackBaseValue: number): number {
+		if (!this.isPercentage() && !this.isIndexedTo100()) {
+			return fallbackBaseValue;
+		}
+
+		const configuredIndex = this._options.percentageModeReferenceSourceIndex;
+		if (!Number.isInteger(configuredIndex) || configuredIndex < 0 || configuredIndex >= this._dataSources.length) {
+			return fallbackBaseValue;
+		}
+
+		const referenceSource = this._dataSources[configuredIndex];
+		const firstValue = referenceSource.firstValue();
+		return firstValue === null ? fallbackBaseValue : firstValue.value;
 	}
 
 	private _formatValue(value: BarPrice | number, formatter: PriceFormatterFn | undefined, fallbackFormatter?: IPriceFormatter): string {

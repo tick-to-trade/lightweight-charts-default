@@ -1,7 +1,7 @@
 /*!
  * @license
- * TradingView Lightweight Charts™ v4.3.4-dev+202411051330
- * Copyright (c) 2024 TradingView, Inc.
+ * TradingView Lightweight Charts™ v4.3.6-dev+202605080846
+ * Copyright (c) 2026 TradingView, Inc.
  * Licensed under Apache License 2.0 https://www.apache.org/licenses/LICENSE-2.0
  */
 const candlestickStyleDefaults = {
@@ -3313,6 +3313,14 @@ class SeriesHorizontalBaseLinePaneView extends SeriesHorizontalLinePaneView {
         if (mode !== 2 /* PriceScaleMode.Percentage */ && mode !== 3 /* PriceScaleMode.IndexedTo100 */) {
             return;
         }
+        const referenceSourceIndex = priceScale._internal_options().percentageModeReferenceSourceIndex;
+        const sources = priceScale._internal_dataSources();
+        if (Number.isInteger(referenceSourceIndex) &&
+            referenceSourceIndex >= 0 &&
+            referenceSourceIndex < sources.length &&
+            sources[referenceSourceIndex] !== this._internal__series) {
+            return;
+        }
         const seriesOptions = this._internal__series._internal_options();
         if (!seriesOptions.baseLineVisible || !this._internal__series._internal_visible()) {
             return;
@@ -4874,8 +4882,11 @@ class Series extends PriceDataSource {
         if (bar === null) {
             return null;
         }
+        const firstValueIndex = this._private__seriesType === 'Bar' || this._private__seriesType === 'Candlestick'
+            ? 0 /* PlotRowValueIndex.Open */
+            : 3 /* PlotRowValueIndex.Close */;
         return {
-            _internal_value: bar._internal_value[3 /* PlotRowValueIndex.Close */],
+            _internal_value: bar._internal_value[firstValueIndex],
             _internal_timePoint: bar._internal_time,
         };
     }
@@ -5798,6 +5809,7 @@ class PriceScale {
         return this._internal_isInverted() ? coordinate : this._internal_height() - 1 - coordinate;
     }
     _internal_priceToCoordinate(price, baseValue) {
+        baseValue = this._private__resolveBaseValue(baseValue);
         if (this._internal_isPercentage()) {
             price = toPercent(price, baseValue);
         }
@@ -5808,6 +5820,7 @@ class PriceScale {
     }
     _internal_pointsArrayToCoordinates(points, baseValue, visibleRange) {
         this._private__makeSureItIsValid();
+        baseValue = this._private__resolveBaseValue(baseValue);
         const bh = this._private__bottomMarginPx();
         const range = ensureNotNull(this._internal_priceRange());
         const min = range._internal_minValue();
@@ -5835,6 +5848,7 @@ class PriceScale {
     }
     _internal_barPricesToCoordinates(pricesList, baseValue, visibleRange) {
         this._private__makeSureItIsValid();
+        baseValue = this._private__resolveBaseValue(baseValue);
         const bh = this._private__bottomMarginPx();
         const range = ensureNotNull(this._internal_priceRange());
         const min = range._internal_minValue();
@@ -5876,6 +5890,7 @@ class PriceScale {
         return this._internal_logicalToPrice(logical, baseValue);
     }
     _internal_logicalToPrice(logical, baseValue) {
+        baseValue = this._private__resolveBaseValue(baseValue);
         let value = logical;
         if (this._internal_isPercentage()) {
             value = fromPercent(value, baseValue);
@@ -6056,6 +6071,7 @@ class PriceScale {
         return this._private__formatter;
     }
     _internal_formatPrice(price, firstValue) {
+        firstValue = this._private__resolveBaseValue(firstValue);
         switch (this._private__options.mode) {
             case 2 /* PriceScaleMode.Percentage */:
                 return this._private__formatPercentage(toPercent(price, firstValue));
@@ -6079,6 +6095,7 @@ class PriceScale {
         return this._private__formatPrice(price, ensureNotNull(this._private__formatterSource())._internal_formatter());
     }
     _internal_formatPricePercentage(price, baseValue) {
+        baseValue = this._private__resolveBaseValue(baseValue);
         price = toPercent(price, baseValue);
         return this._private__formatPercentage(price, percentageFormatter);
     }
@@ -6188,8 +6205,8 @@ class PriceScale {
             if (!source._internal_visible()) {
                 continue;
             }
-            const firstValue = source._internal_firstValue();
-            if (firstValue === null) {
+            const sourceFirstValue = source._internal_firstValue();
+            if (sourceFirstValue === null) {
                 continue;
             }
             const autoScaleInfo = source._internal_autoscaleInfo(visibleBars._internal_left(), visibleBars._internal_right());
@@ -6200,10 +6217,10 @@ class PriceScale {
                         sourceRange = convertPriceRangeToLog(sourceRange, this._private__logFormula);
                         break;
                     case 2 /* PriceScaleMode.Percentage */:
-                        sourceRange = toPercentRange(sourceRange, firstValue._internal_value);
+                        sourceRange = toPercentRange(sourceRange, this._private__resolveBaseValue(sourceFirstValue._internal_value));
                         break;
                     case 3 /* PriceScaleMode.IndexedTo100 */:
-                        sourceRange = toIndexedTo100Range(sourceRange, firstValue._internal_value);
+                        sourceRange = toIndexedTo100Range(sourceRange, this._private__resolveBaseValue(sourceFirstValue._internal_value));
                         break;
                 }
                 if (priceRange === null) {
@@ -6277,6 +6294,18 @@ class PriceScale {
             return (price) => toLog(price, this._private__logFormula);
         }
         return null;
+    }
+    _private__resolveBaseValue(fallbackBaseValue) {
+        if (!this._internal_isPercentage() && !this._internal_isIndexedTo100()) {
+            return fallbackBaseValue;
+        }
+        const configuredIndex = this._private__options.percentageModeReferenceSourceIndex;
+        if (!Number.isInteger(configuredIndex) || configuredIndex < 0 || configuredIndex >= this._private__dataSources.length) {
+            return fallbackBaseValue;
+        }
+        const referenceSource = this._private__dataSources[configuredIndex];
+        const firstValue = referenceSource._internal_firstValue();
+        return firstValue === null ? fallbackBaseValue : firstValue._internal_value;
     }
     _private__formatValue(value, formatter, fallbackFormatter) {
         if (formatter === undefined) {
@@ -12993,6 +13022,7 @@ const layoutOptionsDefaults = {
 const priceScaleOptionsDefaults = {
     autoScale: true,
     mode: 0 /* PriceScaleMode.Normal */,
+    percentageModeReferenceSourceIndex: 0,
     invertScale: false,
     alignLabels: true,
     borderVisible: true,
@@ -13865,7 +13895,7 @@ const customSeriesDefaultOptions = Object.assign(Object.assign({}, seriesOptions
  * Returns the current version as a string. For example `'3.3.0'`.
  */
 function version() {
-    return "4.3.4-dev+202411051330";
+    return "4.3.6-dev+202605080846";
 }
 
 export { ColorType, CrosshairMode, LastPriceAnimationMode, LineStyle, LineType, MarkerType, MismatchDirection, PriceLineSource, PriceScaleMode, TickMarkType, TrackingModeExitMode, createChart, createChartEx, customSeriesDefaultOptions, isBusinessDay, isUTCTimestamp, version };
