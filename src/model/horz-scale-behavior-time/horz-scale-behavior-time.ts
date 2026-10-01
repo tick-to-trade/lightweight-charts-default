@@ -176,7 +176,7 @@ export class HorzScaleBehaviorTime implements IHorzScaleBehavior<Time> {
 	}
 
 	public fillWeightsForPoints(sortedTimePoints: readonly Mutable<TimeScalePoint>[], startIndex: number): void {
-		fillWeightsForPoints(sortedTimePoints, startIndex);
+		fillWeightsForPoints(sortedTimePoints, startIndex, this._options?.timeScale.tickMarkWeightCalculator);
 	}
 
 	public static applyDefaults(options?: DeepPartial<TimeChartOptions>): DeepPartial<TimeChartOptions> {

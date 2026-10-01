@@ -1,6 +1,7 @@
 import { BitmapCoordinatesRenderingScope } from 'fancy-canvas';
 
 import { PricedValue } from '../model/price-scale';
+import { MarkerType } from '../model/series-options';
 import { SeriesItemsIndexesRange, TimedValue } from '../model/time-data';
 
 import { BitmapCoordinatesPaneRenderer } from './bitmap-coordinates-pane-renderer';
@@ -23,6 +24,9 @@ export interface PaneRendererLineDataBase<TItem extends LineItemBase = LineItemB
 	visibleRange: SeriesItemsIndexesRange | null;
 
 	pointMarkersRadius?: number;
+
+	withBreaks?: boolean;
+	markerType?: MarkerType;
 }
 
 function finishStyledArea(scope: BitmapCoordinatesRenderingScope, style: CanvasRenderingContext2D['strokeStyle']): void {
@@ -43,7 +47,7 @@ export abstract class PaneRendererLineBase<TData extends PaneRendererLineDataBas
 			return;
 		}
 
-		const { items, visibleRange, barWidth, lineType, lineWidth, lineStyle, pointMarkersRadius } = this._data;
+		const { items, visibleRange, barWidth, lineType, lineWidth, lineStyle, pointMarkersRadius, withBreaks, markerType } = this._data;
 
 		if (visibleRange === null) {
 			return;
@@ -63,7 +67,7 @@ export abstract class PaneRendererLineBase<TData extends PaneRendererLineDataBas
 		const dashPatternLength = getDashPatternLength(dashPattern);
 
 		if (lineType !== undefined) {
-			walkLine(renderingScope, items, lineType, visibleRange, barWidth, styleGetter, finishStyledArea, dashPatternLength);
+			walkLine(renderingScope, items, lineType, visibleRange, barWidth, styleGetter, finishStyledArea, dashPatternLength, { withBreaks, markerType });
 		}
 
 		if (pointMarkersRadius) {

@@ -13,6 +13,14 @@ export interface TimeScaleOptions extends HorzScaleOptions {
 	 * @defaultValue `undefined`
 	 */
 	tickMarkFormatter?: TickMarkFormatter;
+
+	/**
+	 * Custom calculator of the tick mark weight of the time point.
+	 * The points with the bigger weight have the bigger priority to be shown on the time scale.
+	 *
+	 * @defaultValue `undefined`
+	 */
+	tickMarkWeightCalculator?: (time: Time) => number;
 }
 
 /**

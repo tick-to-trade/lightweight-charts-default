@@ -851,23 +851,27 @@ export class PaneWidget implements IDestroyable, MouseEventHandlers {
 				this._scrollXAnimation = null;
 			}
 
-			if (!priceScale.isEmpty()) {
+			if (!priceScale.isEmpty() && scrollOptions.pressedVerticalMouseMove) {
 				model.startScrollPrice(this._state, priceScale, event.localY);
 			}
 
-			model.startScrollTime(event.localX);
-			this._isScrolling = true;
+			if (scrollOptions.pressedHorizontalMouseMove) {
+				model.startScrollTime(event.localX);
+			}
+			this._isScrolling = scrollOptions.pressedHorizontalMouseMove || scrollOptions.pressedVerticalMouseMove;
 		}
 
 		if (this._isScrolling) {
 			// this allows scrolling not default price scales
-			if (!priceScale.isEmpty()) {
+			if (!priceScale.isEmpty() && scrollOptions.pressedVerticalMouseMove) {
 				model.scrollPriceTo(this._state, priceScale, event.localY);
 			}
 
-			model.scrollTimeTo(event.localX);
-			if (this._scrollXAnimation !== null) {
-				this._scrollXAnimation.addPosition(timeScale.rightOffset() as Coordinate, now);
+			if (scrollOptions.pressedHorizontalMouseMove) {
+				model.scrollTimeTo(event.localX);
+				if (this._scrollXAnimation !== null) {
+					this._scrollXAnimation.addPosition(timeScale.rightOffset() as Coordinate, now);
+				}
 			}
 		}
 	}

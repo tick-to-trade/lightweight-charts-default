@@ -3,7 +3,7 @@ import { IUpdatablePaneView } from '../../views/pane/iupdatable-pane-view';
 
 import { IChartModelBase } from '../chart-model';
 import { ISeries } from '../iseries';
-import { LastPriceAnimationMode, LineStyleOptions } from '../series-options';
+import { LastPriceAnimationMode, LineStyleOptions, MarkerType } from '../series-options';
 import { SeriesLinePaneView } from './line-pane-view';
 import { SeriesDefinition, SeriesDefinitionInternal } from './series-def';
 
@@ -20,6 +20,8 @@ export const lineStyleDefaults: LineStyleOptions = {
 	crosshairMarkerBackgroundColor: '',
 	lastPriceAnimation: LastPriceAnimationMode.Disabled,
 	pointMarkersVisible: false,
+	withBreaks: false,
+	markerType: MarkerType.None,
 };
 
 const createPaneView = (series: ISeries<'Line'>, model: IChartModelBase): IUpdatablePaneView => new SeriesLinePaneView(series, model);

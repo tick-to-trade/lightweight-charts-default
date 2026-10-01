@@ -20,6 +20,8 @@ export const timeScaleOptionsDefaults: HorzScaleOptions = {
 	uniformDistribution: false,
 	minimumHeight: 0,
 	allowBoldLabels: true,
+	minimumVisibleBarsFromRight: 2,
+	skipZeroWeightTicks: false,
 	ignoreWhitespaceIndices: false,
 	enableConflation: false,
 	conflationThresholdFactor: 1,

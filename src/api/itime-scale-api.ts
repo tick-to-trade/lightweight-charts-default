@@ -145,6 +145,14 @@ export interface ITimeScaleApi<HorzScaleItem> {
 	height(): number;
 
 	/**
+	 * Formats the time the same way as the time scale does it for the crosshair label.
+	 *
+	 * @param time - Time to format. Should be one of the times of the time scale points.
+	 * @returns Formatted time or empty string if there is no such time on the time scale.
+	 */
+	formatDateTime(time: HorzScaleItem): string;
+
+	/**
 	 * Subscribe to the visible time range change events.
 	 *
 	 * The argument passed to the handler function is an object with `from` and `to` properties of type {@link Time}, or `null` if there is no visible data.

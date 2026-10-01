@@ -92,6 +92,20 @@ export function fillUpDownCandlesticksColors(options: Partial<CandlestickStyleOp
 }
 
 /**
+ * Represents the type of the marker to draw on each point of the series (applicable for line series).
+ */
+export const enum MarkerType {
+	/**
+	 * No markers.
+	 */
+	None,
+	/**
+	 * Diamond marker.
+	 */
+	Diamond,
+}
+
+/**
  * Represents the type of the last price animation for series such as area or line.
  */
 export const enum LastPriceAnimationMode {
@@ -180,6 +194,20 @@ export interface LineStyleOptions {
 	 * @defaultValue `true`
 	 */
 	lineVisible: boolean;
+
+	/**
+	 * Draw the line with breaks on the points without (or with zero) coordinates.
+	 *
+	 * @defaultValue `false`
+	 */
+	withBreaks: boolean;
+
+	/**
+	 * Type of the marker to draw on each point of the line.
+	 *
+	 * @defaultValue {@link MarkerType.None}
+	 */
+	markerType: MarkerType;
 
 	/**
 	 * Show circle markers on each point.
@@ -300,6 +328,13 @@ export interface AreaStyleOptions {
 	 * @defaultValue `true`
 	 */
 	lineVisible: boolean;
+
+	/**
+	 * Draw the series with breaks on the points without (or with zero) coordinates.
+	 *
+	 * @defaultValue `false`
+	 */
+	withBreaks: boolean;
 
 	/**
 	 * Show circle markers on each point.
@@ -523,6 +558,20 @@ export interface HistogramStyleOptions {
 	 * @defaultValue `0`
 	 */
 	base: number;
+
+	/**
+	 * Draws thin columns (lines) instead of the histogram bars when enabled.
+	 *
+	 * @defaultValue `false`
+	 */
+	columns: boolean;
+
+	/**
+	 * Width of the columns. Used only if {@link HistogramStyleOptions.columns} is enabled.
+	 *
+	 * @defaultValue `1`
+	 */
+	columnWidth: number;
 }
 
 /**

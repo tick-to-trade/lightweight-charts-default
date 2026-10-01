@@ -9,7 +9,7 @@ export { TrackingModeExitMode } from './model/chart-model';
 export { CrosshairMode } from './model/crosshair';
 export { MismatchDirection } from './model/plot-list';
 export { PriceScaleMode } from './model/price-scale';
-export { PriceLineSource, LastPriceAnimationMode } from './model/series-options';
+export { PriceLineSource, LastPriceAnimationMode, MarkerType } from './model/series-options';
 export { ColorType } from './model/layout-options';
 
 export { isBusinessDay, isUTCTimestamp } from './model/horz-scale-behavior-time/types';

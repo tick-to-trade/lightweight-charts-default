@@ -119,5 +119,6 @@ const MIN_SAFE_VALUE = Number.MIN_SAFE_INTEGER / 100;
 const MAX_SAFE_VALUE = Number.MAX_SAFE_INTEGER / 100;
 
 function isSafeValue(value: number): boolean {
-	return value >= MIN_SAFE_VALUE && value <= MAX_SAFE_VALUE;
+	// NaN values are allowed: they are used to make the gaps in the series (see `withBreaks` option)
+	return Number.isNaN(value) || value >= MIN_SAFE_VALUE && value <= MAX_SAFE_VALUE;
 }

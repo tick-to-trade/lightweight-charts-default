@@ -106,6 +106,17 @@ export interface PriceScaleOptions {
 	mode: PriceScaleMode;
 
 	/**
+	 * Index of the source (in the list of the sources attached to the price scale) used as the shared base
+	 * for the percentage and indexed to 100 modes.
+	 * When a valid source at this index has data, all the attached sources are normalized
+	 * against the first visible value of that source.
+	 * Set a negative value to make every source use its own first visible value.
+	 *
+	 * @defaultValue `0`
+	 */
+	percentageModeReferenceSourceIndex: number;
+
+	/**
 	 * Invert the price scale, so that a upwards trend is shown as a downwards trend and vice versa.
 	 * Affects both the price scale and the data on the chart.
 	 *
@@ -471,6 +482,7 @@ export class PriceScale {
 	}
 
 	public priceToCoordinate(price: number, baseValue: number): Coordinate {
+		baseValue = this._resolveBaseValue(baseValue);
 		if (this.isPercentage()) {
 			price = toPercent(price, baseValue);
 		} else if (this.isIndexedTo100()) {
@@ -481,6 +493,7 @@ export class PriceScale {
 	}
 
 	public pointsArrayToCoordinates<T extends PricedValue>(points: T[], baseValue: number, visibleRange?: SeriesItemsIndexesRange): void {
+		baseValue = this._resolveBaseValue(baseValue);
 		this._makeSureItIsValid();
 		const bh = this._bottomMarginPx();
 		const range = ensureNotNull(this.priceRange());
@@ -515,6 +528,7 @@ export class PriceScale {
 	}
 
 	public barPricesToCoordinates<T extends BarPrices & BarCoordinates>(pricesList: T[], baseValue: number, visibleRange?: SeriesItemsIndexesRange): void {
+		baseValue = this._resolveBaseValue(baseValue);
 		this._makeSureItIsValid();
 		const bh = this._bottomMarginPx();
 		const range = ensureNotNull(this.priceRange());
@@ -568,6 +582,7 @@ export class PriceScale {
 	}
 
 	public logicalToPrice(logical: number, baseValue: number): BarPrice {
+		baseValue = this._resolveBaseValue(baseValue);
 		let value = logical;
 		if (this.isPercentage()) {
 			value = fromPercent(value, baseValue);
@@ -786,6 +801,7 @@ export class PriceScale {
 	}
 
 	public formatPrice(price: number, firstValue: number): string {
+		firstValue = this._resolveBaseValue(firstValue);
 		switch (this._options.mode) {
 			case PriceScaleMode.Percentage:
 				return this._formatPercentage(toPercent(price, firstValue));
@@ -823,6 +839,7 @@ export class PriceScale {
 	}
 
 	public formatPricePercentage(price: number, baseValue: number): string {
+		baseValue = this._resolveBaseValue(baseValue);
 		price = toPercent(price, baseValue);
 		return this._formatPercentage(price, percentageFormatter);
 	}
@@ -999,10 +1016,10 @@ export class PriceScale {
 						sourceRange = convertPriceRangeToLog(sourceRange, this._logFormula);
 						break;
 					case PriceScaleMode.Percentage:
-						sourceRange = toPercentRange(sourceRange, firstValue.value);
+						sourceRange = toPercentRange(sourceRange, this._resolveBaseValue(firstValue.value));
 						break;
 					case PriceScaleMode.IndexedTo100:
-						sourceRange = toIndexedTo100Range(sourceRange, firstValue.value);
+						sourceRange = toIndexedTo100Range(sourceRange, this._resolveBaseValue(firstValue.value));
 						break;
 				}
 
@@ -1085,6 +1102,20 @@ export class PriceScale {
 		}
 
 		return null;
+	}
+
+	private _resolveBaseValue(fallbackBaseValue: number): number {
+		if (!this.isPercentage() && !this.isIndexedTo100()) {
+			return fallbackBaseValue;
+		}
+
+		const referenceSourceIndex = this._options.percentageModeReferenceSourceIndex;
+		if (!Number.isInteger(referenceSourceIndex) || referenceSourceIndex < 0 || referenceSourceIndex >= this._dataSources.length) {
+			return fallbackBaseValue;
+		}
+
+		const firstValue = this._dataSources[referenceSourceIndex].firstValue();
+		return firstValue === null ? fallbackBaseValue : firstValue.value;
 	}
 
 	private _formatValue(value: BarPrice | number, formatter: PriceFormatterFn | undefined, fallbackFormatter?: IPriceFormatter): string {

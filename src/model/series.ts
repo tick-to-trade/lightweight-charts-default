@@ -335,8 +335,13 @@ export class Series<T extends SeriesType> extends PriceDataSource implements IDe
 			return null;
 		}
 
+		// bars and candlesticks are based on the open price of the first visible bar
+		const firstValueIndex = this._seriesType === 'Bar' || this._seriesType === 'Candlestick'
+			? PlotRowValueIndex.Open
+			: PlotRowValueIndex.Close;
+
 		return {
-			value: bar.value[PlotRowValueIndex.Close],
+			value: bar.value[firstValueIndex],
 			timePoint: bar.time,
 		};
 	}
@@ -691,7 +696,7 @@ export class Series<T extends SeriesType> extends PriceDataSource implements IDe
 
 		let range = barsMinMax !== null ? new PriceRangeImpl(barsMinMax.min, barsMinMax.max) : null;
 		let margins = null;
-		if (this.seriesType() === 'Histogram') {
+		if (this.seriesType() === 'Histogram' && this._isOverlay()) {
 			const base = (this._options as HistogramStyleOptions).base;
 			const rangeWithBase = new PriceRangeImpl(base, base);
 			range = range !== null ? range.merge(rangeWithBase) : rangeWithBase;

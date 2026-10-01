@@ -2,7 +2,7 @@ import { Mutable } from '../../helpers/mutable';
 
 import { InternalHorzScaleItem } from '../ihorz-scale-behavior';
 import { TickMarkWeightValue, TimeScalePoint } from '../time-data';
-import { TickMarkWeight, TimePoint } from './types';
+import { TickMarkWeight, Time, TimePoint } from './types';
 
 function hours(count: number): number {
 	return count * 60 * 60 * 1000;
@@ -54,7 +54,7 @@ function cast(t: InternalHorzScaleItem): TimePoint {
 	return t as unknown as TimePoint;
 }
 
-export function fillWeightsForPoints(sortedTimePoints: readonly Mutable<TimeScalePoint>[], startIndex: number = 0): void {
+export function fillWeightsForPoints(sortedTimePoints: readonly Mutable<TimeScalePoint>[], startIndex: number = 0, tickMarkWeightCalculator?: (time: Time) => number): void {
 	if (sortedTimePoints.length === 0) {
 		return;
 	}
@@ -69,7 +69,9 @@ export function fillWeightsForPoints(sortedTimePoints: readonly Mutable<TimeScal
 		const currentDate = new Date(cast(currentPoint.time).timestamp * 1000);
 
 		if (prevDate !== null) {
-			currentPoint.timeWeight = weightByTime(currentDate, prevDate) as TickMarkWeightValue;
+			currentPoint.timeWeight = (tickMarkWeightCalculator !== undefined
+				? tickMarkWeightCalculator(cast(currentPoint.time).timestamp)
+				: weightByTime(currentDate, prevDate)) as TickMarkWeightValue;
 		}
 
 		totalTimeDiff += cast(currentPoint.time).timestamp - (prevTime || cast(currentPoint.time).timestamp);

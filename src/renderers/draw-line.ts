@@ -21,6 +21,14 @@ export const enum LineType {
 	 * A curved line.
 	 */
 	Curved,
+	/**
+	 * Crosses drawn at each point (no connecting line).
+	 */
+	Cross,
+	/**
+	 * Circles drawn at each point (no connecting line).
+	 */
+	Circle,
 }
 
 /**

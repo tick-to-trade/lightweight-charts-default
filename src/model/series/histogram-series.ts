@@ -9,6 +9,8 @@ import { SeriesDefinition, SeriesDefinitionInternal } from './series-def';
 export const histogramStyleDefaults: HistogramStyleOptions = {
 	color: '#26a69a',
 	base: 0,
+	columns: false,
+	columnWidth: 1,
 };
 const createPaneView = (series: ISeries<'Histogram'>, model: IChartModelBase): IUpdatablePaneView => new SeriesHistogramPaneView(series, model);
 

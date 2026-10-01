@@ -41,8 +41,11 @@ export class SeriesHistogramPaneView extends LinePaneViewBase<'Histogram', Histo
 	}
 
 	protected _prepareRendererData(): void {
+		const options = this._series.options();
 		const data: PaneRendererHistogramData = {
 			items: this._items,
+			columns: options.columns,
+			columnWidth: options.columnWidth,
 			barSpacing: this._model.timeScale().barSpacing(),
 			visibleRange: this._itemsVisibleRange,
 			histogramBase: this._series.priceScale().priceToCoordinate(this._series.options().base, ensureNotNull(this._series.firstValue()).value),

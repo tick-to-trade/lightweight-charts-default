@@ -29,6 +29,12 @@ export class TickMarks<HorzScaleItem> {
 	private _marksByWeight: Map<TickMarkWeightValue, TickMark[]> = new Map();
 	private _cache: MarksCache | null = null;
 	private _uniformDistribution: boolean = false;
+	private _skipZeroWeightTicks: boolean = false;
+
+	public setSkipZeroWeightTicks(val: boolean): void {
+		this._skipZeroWeightTicks = val;
+		this._cache = null;
+	}
 
 	public setUniformDistribution(val: boolean): void {
 		this._uniformDistribution = val;
@@ -100,13 +106,14 @@ export class TickMarks<HorzScaleItem> {
 		}
 	}
 
+	// eslint-disable-next-line complexity
 	private _buildMarksImpl(maxIndexesPerMark: number, checkIndicesForData: boolean, indicesWithDataMap: Map<TimePointIndex, boolean>): readonly TickMark[] {
 		let marks: TickMark[] = [];
 
 		const canBeIncluded = (mark: TickMark): boolean => !checkIndicesForData || indicesWithDataMap.has(mark.index);
 
 		for (const weight of Array.from(this._marksByWeight.keys()).sort((a: number, b: number) => b - a)) {
-			if (!this._marksByWeight.get(weight)) {
+			if (!this._marksByWeight.get(weight) || (this._skipZeroWeightTicks && !weight)) {
 				continue;
 			}
 

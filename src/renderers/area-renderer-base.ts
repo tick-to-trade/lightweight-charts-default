@@ -20,6 +20,8 @@ export interface PaneRendererAreaDataBase<TItem extends AreaFillItemBase = AreaF
 
 	barWidth: number;
 
+	withBreaks?: boolean;
+
 	visibleRange: SeriesItemsIndexesRange | null;
 }
 
@@ -50,7 +52,7 @@ export abstract class PaneRendererAreaBase<TData extends PaneRendererAreaDataBas
 			return;
 		}
 
-		const { items, visibleRange, barWidth, lineWidth, lineStyle, lineType } = this._data;
+		const { items, visibleRange, barWidth, lineWidth, lineStyle, lineType, withBreaks } = this._data;
 		const baseLevelCoordinate =
 			this._data.baseLevelCoordinate ??
 				(this._data.invertFilledArea ? 0 : renderingScope.mediaSize.height) as Coordinate;
@@ -69,7 +71,7 @@ export abstract class PaneRendererAreaBase<TData extends PaneRendererAreaDataBas
 		// walk lines with width=1 to have more accurate gradient's filling
 		ctx.lineWidth = 1;
 
-		walkLine(renderingScope, items, lineType, visibleRange, barWidth, this._fillStyle.bind(this), finishStyledArea.bind(null, baseLevelCoordinate));
+		walkLine(renderingScope, items, lineType, visibleRange, barWidth, this._fillStyle.bind(this), finishStyledArea.bind(null, baseLevelCoordinate), 0, { withBreaks });
 	}
 
 	protected abstract _fillStyle(renderingScope: BitmapCoordinatesRenderingScope, item: TData['items'][0]): CanvasRenderingContext2D['fillStyle'];

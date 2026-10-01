@@ -74,6 +74,7 @@ export class SeriesAreaPaneView extends LineHitTestPaneViewBase<'Area', AreaFill
 			invertFilledArea: options.invertFilledArea,
 			visibleRange: this._itemsVisibleRange,
 			barWidth: this._model.timeScale().barSpacing(),
+			withBreaks: options.withBreaks,
 		});
 
 		this._lineRenderer.setData({
@@ -83,6 +84,7 @@ export class SeriesAreaPaneView extends LineHitTestPaneViewBase<'Area', AreaFill
 			lineWidth: options.lineWidth,
 			visibleRange: this._itemsVisibleRange,
 			barWidth: this._model.timeScale().barSpacing(),
+			withBreaks: options.withBreaks,
 			pointMarkersRadius: options.pointMarkersVisible ? (options.pointMarkersRadius || options.lineWidth / 2 + 2) : undefined,
 		});
 	}

@@ -222,6 +222,7 @@ function main() {
 		nodir: true,
 		ignore: [
 			'**/node_modules/**',
+			'**/node_modules*/**',
 			'**/docs/api/**',
 		],
 	});

@@ -125,7 +125,7 @@ export interface LayoutOptions {
 	 * However, if you already fulfill this requirement then you can disable this
 	 * attribution logo.
 	 *
-	 * @defaultValue true
+	 * @defaultValue false
 	 */
 	attributionLogo: boolean;
 

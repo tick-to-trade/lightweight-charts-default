@@ -19,6 +19,18 @@ export class SeriesHorizontalBaseLinePaneView extends SeriesHorizontalLinePaneVi
 			return;
 		}
 
+		const referenceSourceIndex = priceScale.options().percentageModeReferenceSourceIndex;
+		const sources = priceScale.dataSources();
+		if (
+			Number.isInteger(referenceSourceIndex) &&
+			referenceSourceIndex >= 0 &&
+			referenceSourceIndex < sources.length &&
+			sources[referenceSourceIndex] !== this._series
+		) {
+			// the base line is drawn for the reference source only
+			return;
+		}
+
 		const seriesOptions = this._series.options();
 
 		if (!seriesOptions.baseLineVisible || !this._series.visible()) {

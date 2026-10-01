@@ -26,6 +26,8 @@ export class SeriesLinePaneView extends LineHitTestPaneViewBase<'Line', LineStro
 			pointMarkersRadius: options.pointMarkersVisible ? (options.pointMarkersRadius || options.lineWidth / 2 + 2) : undefined,
 			visibleRange: this._itemsVisibleRange,
 			barWidth: this._model.timeScale().barSpacing(),
+			withBreaks: options.withBreaks,
+			markerType: options.markerType,
 		};
 
 		this._renderer.setData(data);

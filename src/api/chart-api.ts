@@ -93,6 +93,8 @@ function migrateHandleScaleScrollOptions<HorzScaleItem>(options: DeepPartial<Cha
 			vertTouchDrag: handleScroll,
 			mouseWheel: handleScroll,
 			pressedMouseMove: handleScroll,
+			pressedHorizontalMouseMove: handleScroll,
+			pressedVerticalMouseMove: handleScroll,
 		};
 	}
 }

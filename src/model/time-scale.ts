@@ -221,6 +221,20 @@ export interface HorzScaleOptions {
 	allowBoldLabels: boolean;
 
 	/**
+	 * The minimum number of bars which stay visible when the chart is scrolled to the right end of the data.
+	 *
+	 * @defaultValue `2`
+	 */
+	minimumVisibleBarsFromRight: number;
+
+	/**
+	 * Do not render tick marks for the points with zero weight.
+	 *
+	 * @defaultValue false
+	 */
+	skipZeroWeightTicks: boolean;
+
+	/**
 	 * Ignore time scale points containing only whitespace (for all series) when
 	 * drawing grid lines, tick marks, and snapping the crosshair to time scale points.
 	 *
@@ -363,6 +377,7 @@ export class TimeScale<HorzScaleItem> implements ITimeScale {
 		this._updateDateTimeFormatter();
 
 		this._tickMarks.setUniformDistribution(options.uniformDistribution);
+		this._tickMarks.setSkipZeroWeightTicks(options.skipZeroWeightTicks);
 		this._updateConflationFactor();
 		this.recalculateIndicesWithData();
 	}
@@ -408,6 +423,10 @@ export class TimeScale<HorzScaleItem> implements ITimeScale {
 
 		if (options.ignoreWhitespaceIndices !== undefined && options.ignoreWhitespaceIndices !== this._options.ignoreWhitespaceIndices) {
 			this.recalculateIndicesWithData();
+		}
+
+		if (options.skipZeroWeightTicks !== undefined) {
+			this._tickMarks.setSkipZeroWeightTicks(options.skipZeroWeightTicks);
 		}
 
 		this._invalidateTickMarks();
@@ -1130,7 +1149,7 @@ export class TimeScale<HorzScaleItem> implements ITimeScale {
 	private _maxRightOffset(): number {
 		return this._options.fixRightEdge
 			? 0
-			: (this._width / this._barSpacing) - Math.min(Constants.MinVisibleBarsCount, this._points.length);
+			: (this._width / this._barSpacing) - Math.min(this._options.minimumVisibleBarsFromRight ?? Constants.MinVisibleBarsCount, this._points.length);
 	}
 
 	private _saveCommonTransitionsStartState(): void {
